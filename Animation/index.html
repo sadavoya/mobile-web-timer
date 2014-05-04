@@ -1,16 +1,13 @@
 ﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" manifest="server.js">
 <head>
     <link type="text/css" rel="stylesheet" media="screen" href="jqtouch/jqtouch.css" />
     <link type="text/css" rel="stylesheet" media="screen" href="themes/jqt/theme.css" />
+    <link type="text/css" rel="stylesheet" media="screen" href="kilo.css" />
     <script type="text/javascript" src="jqtouch/jquery-1.4.2.js"></script>
     <script type="text/javascript" src="jqtouch/jqtouch.js"></script>
-    <script type="text/javascript">
-        var jQT = $.jQTouch({
-            icon: 'kilo.png'
-        });
-    </script>
-    
+    <script type="text/javascript" src="js/kilo.js"></script>
+    <!--<script type="text/javascript" src="js/debug.js"></script> -->
     <title>Kilo</title>
 </head>
 <body>
@@ -54,7 +51,7 @@
             <a class="button slideup" href="#createEntry">+</a>
         </div>
         <ul class="edgetoedge">
-            <li id="emptyTemplate" class="entry" style="display:none">
+            <li id="entryTemplate" class="entry" style="display:none">
                 <span class="label">Label</span>
                 <span class="calories">000</span>
                 <span class="delete">Delete</span>
