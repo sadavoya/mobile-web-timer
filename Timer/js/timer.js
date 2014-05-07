@@ -3,6 +3,47 @@
 /// <reference path="util.js" />
 /// <reference path="" />
 (function () {
+    //TODO: Alarms go off every time period, without intervention
+    //TODO: Each alarm needs to include one or more time periods that it is enabled
+    //TODO: Include an elapsed count - the number of times the timer has elapsed since it was started i.e. (current time - start time) / timer duration
+    //TODO: Reminders to change position
+    //TODO: Snooze
+    //TODO: Timers need to be colored for at-a-glance identification
+    //TODO: Timers should continue to count passed 0, with some indication that the time has elapsed
+    //TODO: Vacation option to disable the whole thing
+    // Use cases: Only a "User". No other roles
+    //      User starts app. App displays list of active timers for the current time. 
+    //      User starts app, adds a new timer that will go off every 30 minutes
+    //      User opens a timer, specifies that the timer should only apply from 9AM to 5PM, Monday to Friday
+    //      User starts app, goes to enable page. Selects "Buff", "Dmg Shield" and "Respawn", then clicks Ok.
+    //              Screen flips to active timers, with Buff, Dmg Shield and Respawn each counting down.
+    //              User taps Respawn and is taken to the Respawn timer editor
+    //              User taps "copy" to make a new timer based on the Respawn timer; screen flips to the new timer
+    //              User renames the new timer from "New Timer" to "Respawn - second room", and updates the duration to 7 minutes
+    //              User saves
+    // Datamodel
+    // Timer table contains:
+    //      OIdTimer
+    //      Name
+    //      Description
+    //      SnoozeDuration
+    //      FOIdColour
+    //      Repetitions (0 = unlimited)
+    //      FOIdReminderType - flash or modal popup (more complex? allow different time frames for different types? maybe v2)
+    //
+    //  Repetition table:
+    //      OIdRepetition
+    //      
+    //  Colour table: need to store as RGBA because hex values don't include "A".
+    //      OIdColour
+    //      Name - optional
+    //      R
+    //      G
+    //      B
+    //      A
+    //          TODO: Need a function to convert to/from hex
+    
+
     var jQT = $.jQTouch({
         icon: 'kilo.png',
         useAnimations: true

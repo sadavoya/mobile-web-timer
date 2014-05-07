@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" manifest="server.js">
+<html xmlns="http://www.w3.org/1999/xhtml"> <!-- manifest="server.js"> -->
 <head>
     <link type="text/css" rel="stylesheet" media="screen" href="jqtouch/jqtouch.css" />
     <link type="text/css" rel="stylesheet" media="screen" href="themes/jqt/theme.css" />
@@ -12,6 +12,151 @@
     <title>Timer</title>
 </head>
 <body>
-    Hello World
+    <div id="home">
+        <div class="toolbar">
+            <h1>Timers</h1>
+            <div class="rounded">09:00 AM</div>
+            <a class="button flipright" href="#setup">Setup</a>
+        </div>
+        <ul class="edgetoedge">
+            <li id="activeTimerTemplate" class="activeTimer template">
+                <span class="activeTimerlist countdown left">Time Left</span>
+                <span class="activeTimerlist willGoOffAt right">(Will Go Off At)</span>
+                <span class="activeTimerlist name center">Name</span>
+            </li>
+        </ul>
+    </div>
+    <div id="setup">
+        <div class="toolbar">
+            <h1>Settings</h1>
+            <a class="button cancel" href="#">Cancel</a>
+        </div>
+        <ul class="edgetoedge">
+            <li class="arrow"><a href="#timers">Timers</a></li>
+            <li class="arrow"><a href="#timersets">Timer Sets</a></li>
+            <li class="arrow"><a href="#categories">Categories</a></li>
+            <li class="arrow"><a href="#about">About</a></li>
+        </ul>
+    </div>
+    <div id="about">
+        <div class="toolbar">
+            <h1>About</h1>
+            <a class="button back" href="#">Back</a>
+        </div>
+        <div>
+            <p>Timer gives you easy access to your list of timers.
+            This app stores all your settings locally - no need for internet access to use it!
+            You can create multiple timers. Enable only the timers you want at the moment.
+            Assign timers to categories for grouping and colours (future version).
+            Group timers into sets and enable an entire set at once.
+            </p>
+        </div>
+    </div>
+    <div id="timers">
+        <div class="toolbar">
+            <h1>Timers</h1>
+            <a class="button back" href="#">Back</a>
+            <a class="button slideup" href="#createTimer">+</a>
+        </div>
+        <ul class="edgetoedge">
+            <li id="timerTemplate" class="timerTemplate template">
+                <span class="timerTemplate name left">Name</span>
+                <span class="timerTemplate delete right">Delete</span>
+                <span class="timerTemplate duration center">Duration</span>
+            </li>
+        </ul>
+    </div>
+    <div id="createTimer">
+        <div class="toolbar">
+            <h1>New Timer</h1>
+            <a class="button cancel" href="#">Cancel</a>
+        </div>
+        <form method="post">
+            <ul class="rounded">
+                <li><input type="text" placeholder="Name" name="name" id="timer_name" autocapitalize="off" autocorrect="off" autocomplete="off" /></li>
+                <li><input type="text" placeholder="Description" name="description" id="timer_description" autocapitalize="off" autocorrect="off" autocomplete="off" /></li>
+                <li><span class="label">Enabled:</span><input type="checkbox" name="enabled" id="timer_enabled" /></li>
+                <li><span class="label">Duration:</span><input type="time" name="duration" id="timer_duration" /></li>
+                <li><span class="label">Snooze:</span><input type="time" placeholder="Snooze" name="snooze" id="timer_snooze" /></li>
+                <li>
+                    <label class="left">Category</label>
+                    <select name="category" id="timer_category">
+                        <option value="0">Healing</option>
+                        <option value="1">Buff</option>
+                        <option value="2">Dmg Shield</option>
+                        <option value="3">Health</option>
+                    </select>
+                </li>
+
+                <li><input type="submit" class="submit" name="action" value="Save Entry" /></li>
+            </ul>
+        </form>
+    </div>
+
+    <div id="timersets">
+        <div class="toolbar">
+            <h1>Timer Sets</h1>
+            <a class="button back" href="#">Back</a>
+            <a class="button slideup" href="#createTimerSet">+</a>
+        </div>
+        <ul class="edgetoedge">
+            <li><span>Use timer sets to group timers so you can enable multiple timers at once.</span></li>
+            <li id="categoryTemplate" class="categoryTemplate template">
+                <span class="categoryTemplate name left">Name</span>
+                <span class="categoryTemplate delete right">Delete</span>
+                <span class="categoryTemplate description center">Description</span>
+            </li>
+        </ul>
+    </div>
+    <div id="createTimerSet">
+        <div class="toolbar">
+            <h1>New Timer Set</h1>
+            <a class="button cancel" href="#">Cancel</a>
+        </div>
+        <form method="post">
+            <ul class="rounded">
+                <li><input type="text" placeholder="Name" name="name" id="timerset_name" autocapitalize="off" autocorrect="off" autocomplete="off" /></li>
+                <li><input type="text" placeholder="Description" name="description" id="timerset_description" autocapitalize="off" autocorrect="off" autocomplete="off" /></li>
+                <li><span class="label">Enabled:</span><input type="checkbox" name="enabled" id="timerset_enabled" /></li>
+                <li>
+                    <select name="timers" id="timerset_timers" multiple="true">
+                        <option value="0">"Cast dmg shield (7 minutes)"</option>
+                        <option value="1">"Drink water (30 minutes)"</option>
+                    </select>
+                </li>
+                <li><input type="submit" class="submit" name="action" value="Save Entry" /></li>
+            </ul>
+        </form>
+    </div>
+
+    <div id="categories">
+        <div class="toolbar">
+            <h1>Categories</h1>
+            <a class="button back" href="#">Back</a>
+            <a class="button slideup" href="#createCategory">+</a>
+        </div>
+        <ul class="edgetoedge">
+            <li id="categoryTemplate" class="categoryTemplate template">
+                <span class="categoryTemplate name left">Name</span>
+                <span class="categoryTemplate delete right">Delete</span>
+                <span class="categoryTemplate description center">Description</span>
+            </li>
+        </ul>
+    </div>
+    <div id="createCategory">
+        <div class="toolbar">
+            <h1>New Category</h1>
+            <a class="button cancel" href="#">Cancel</a>
+        </div>
+        <form method="post">
+            <ul class="rounded">
+                <li><input type="text" placeholder="Name" name="name" id="category_name" autocapitalize="off" autocorrect="off" autocomplete="off" /></li>
+                <li><input type="text" placeholder="Description" name="description" id="category_description" autocapitalize="off" autocorrect="off" autocomplete="off" /></li>
+                <li><span>Future versions will support category colours and grouping</span></li>
+                <li><input type="submit" class="submit" name="action" value="Save Entry" /></li>
+            </ul>
+        </form>
+    </div>
+
 </body>
 </html>
