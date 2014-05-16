@@ -11,7 +11,7 @@
     <!--<script type="text/javascript" src="js/debug.js"></script> -->
     <title>Timer</title>
 </head>
-<body>
+<body id="jqt">
     <div id="home">
         <div class="toolbar">
             <h1>Timers</h1>
@@ -56,17 +56,17 @@
         <div class="toolbar">
             <h1>Timers</h1>
             <a class="button back" href="#">Back</a>
-            <a class="button slideup" href="#createTimer">+</a>
+            <a class="button slideup" href="#create_timer">+</a>
         </div>
         <ul class="edgetoedge">
-            <li id="timerTemplate" class="timerTemplate template">
-                <span class="timerTemplate name left">Name</span>
-                <span class="timerTemplate delete right">Delete</span>
-                <span class="timerTemplate duration center">Duration</span>
+            <li id="timer_template" class="timer_template template">
+                <span class="timer_template name left">Name</span>
+                <span class="timer_template delete right">Delete</span>
+                <span class="timer_template duration center">Duration</span>
             </li>
         </ul>
     </div>
-    <div id="createTimer">
+    <div id="create_timer">
         <div class="toolbar">
             <h1>New Timer</h1>
             <a class="button cancel" href="#">Cancel</a>
@@ -88,7 +88,7 @@
                     </select>
                 </li>
 
-                <li><input type="submit" class="submit" name="action" value="Save Entry" /></li>
+                <li><input type="submit" class="submit" name="action" value="Save" /></li>
             </ul>
         </form>
     </div>
@@ -97,18 +97,18 @@
         <div class="toolbar">
             <h1>Timer Sets</h1>
             <a class="button back" href="#">Back</a>
-            <a class="button slideup" href="#createTimerSet">+</a>
+            <a class="button slideup" href="#create_timerset">+</a>
         </div>
         <ul class="edgetoedge">
             <li><span>Use timer sets to group timers so you can enable multiple timers at once.</span></li>
-            <li id="categoryTemplate" class="categoryTemplate template">
-                <span class="categoryTemplate name left">Name</span>
-                <span class="categoryTemplate delete right">Delete</span>
-                <span class="categoryTemplate description center">Description</span>
+            <li id="timerset_template" class="timerset_template template">
+                <span class="timerset_template name left">Name</span>
+                <span class="timerset_template delete right">Delete</span>
+                <span class="timerset_template description center">Description</span>
             </li>
         </ul>
     </div>
-    <div id="createTimerSet">
+    <div id="create_timerset">
         <div class="toolbar">
             <h1>New Timer Set</h1>
             <a class="button cancel" href="#">Cancel</a>
@@ -124,7 +124,7 @@
                         <option value="1">"Drink water (30 minutes)"</option>
                     </select>
                 </li>
-                <li><input type="submit" class="submit" name="action" value="Save Entry" /></li>
+                <li><input type="submit" class="submit" name="action" value="Save" /></li>
             </ul>
         </form>
     </div>
@@ -133,17 +133,20 @@
         <div class="toolbar">
             <h1>Categories</h1>
             <a class="button back" href="#">Back</a>
-            <a class="button slideup" href="#createCategory">+</a>
+            <a class="button slideup" href="#create_category">+</a>
         </div>
         <ul class="edgetoedge">
-            <li id="categoryTemplate" class="categoryTemplate template">
-                <span class="categoryTemplate name left">Name</span>
-                <span class="categoryTemplate delete right">Delete</span>
-                <span class="categoryTemplate description center">Description</span>
+            <li id="category_template" class="category_template template">
+                <span class="category_template name left">Name</span>
+                <span class="timerset_template recordbuttons right">
+                    <span class="timerset_template edit left">[Edit] </span>
+                    <span class="timerset_template delete right"> [Delete]</span>
+                </span>
+                <span class="category_template description center">Description</span>
             </li>
         </ul>
     </div>
-    <div id="createCategory">
+    <div id="create_category">
         <div class="toolbar">
             <h1>New Category</h1>
             <a class="button cancel" href="#">Cancel</a>
@@ -151,9 +154,9 @@
         <form method="post">
             <ul class="rounded">
                 <li><input type="text" placeholder="Name" name="name" id="category_name" autocapitalize="off" autocorrect="off" autocomplete="off" /></li>
-                <li><input type="text" placeholder="Description" name="description" id="category_description" autocapitalize="off" autocorrect="off" autocomplete="off" /></li>
+                <li><input type="text" placeholder="Description" name="description" id="category_description" autocapitalize=" off" autocorrect="off" autocomplete="off" /></li>
                 <li><span>Future versions will support category colours and grouping</span></li>
-                <li><input type="submit" class="submit" name="action" value="Save Entry" /></li>
+                <li><input type="submit" class="submit" name="action" value="Save" /></li>
             </ul>
         </form>
     </div>

@@ -1,7 +1,7 @@
 ﻿/// <reference path="../jqtouch/jquery-1.4.2.js" />
 /// <reference path="../jqtouch/jqtouch.js" />
 /// <reference path="util.js" />
-/// <reference path="" />
+
 (function () {
     //TODO: Alarms go off every time period, without intervention
     //TODO: Each alarm needs to include one or more time periods that it is enabled
@@ -50,8 +50,8 @@
     }),
         db;
 
-    function errorHandler(transaction, error) {
-        alert('Oops. Error was ' + error.message + ' (Code: ' + error.code + ')');
+    function errorHandler(errorSource, transaction, error) {
+        alert('Error in ' + errorSource + '. Error was ' + error.message + ' (Code: ' + error.code + ')');
         return true;
     }
 
@@ -92,27 +92,114 @@
     }
 
     function loadSettings() {
-        loadSetting('age');
-        loadSetting('weight');
-        loadSetting('budget');
+        //loadSetting('age');
+        //loadSetting('weight');
+        //loadSetting('budget');
     }
     function saveSettings(e) {
-        saveSetting('age');
-        saveSetting('weight');
-        saveSetting('budget');
+        //saveSetting('age');
+        //saveSetting('weight');
+        //saveSetting('budget');
 
         jQT.goBack();
         e.preventDefault();
     }
 
-    function deleteEntryById(id) {
-        db.transaction(
-            function (transaction) {
-                transaction.executeSql('DELETE FROM entries WHERE id=?;', [id],
-                    null, errorHandler);
-            });
+    function deleteById(table, canDeleteId, id) {
+        if (!canDeleteId || canDeleteId(id)) {
+            db.transaction(
+                function (transaction) {
+                    transaction.executeSql('DELETE FROM ' + table + ' WHERE oid_' + table + '=' + id + ';', null,
+                        null, errorHandler.curry('DELETE ' + table + '(' + id + ')'));
+                });
+        }
     }
-    function refreshEntries() {
+    function editCategory(id_value) {
+        var table = 'category',
+            id_field = 'oid_' + table;
+        function populate(datarow) {
+            var name_element = $('#' + table + '_name');
+            name_element.val(datarow.name);
+            name_element.data(id_field, id_value);
+            $('#' + table + '_description').val(datarow.description);
+        }
+        return editRecord(table, id_field, id_value, populate);
+    }
+    function editRecord(table, id_field, id_value, populate) {
+        return function () {
+            db.transaction(function (transaction) {                
+                transaction.executeSql('SELECT * FROM ' + table + ' WHERE ' + id_field + '=' + id_value, null,
+                    function (transaction, records) {
+                        var datarow;
+                        if (records && records.rows && records.rows.item(0)) {
+                            datarow = records.rows.item(0);
+                            populate(datarow);                            
+                        }
+                    },
+                    errorHandler.curry('refreshList (' + table + ')'));
+            });
+            jQT.goTo('#create_' + table, 'slideup');
+        }
+    }
+    function refresh_category_list() {
+        var table = 'category',
+            orderByField = 'name',
+            listName = 'categories';
+
+        refreshList(table, orderByField, listName,
+            null,
+            function (transaction, records) {
+                var datarow,
+                    listrow,
+                    id_field = 'oid_' + table;
+
+                for (i = 0; i < records.rows.length; i += 1) {
+                    datarow = records.rows.item(i);
+                    listrow = $('#' + table + '_template').clone();
+                    listrow.removeAttr('id');
+                    listrow.removeClass('template');
+                    listrow.data(id_field, datarow[id_field]);
+                    listrow.appendTo('#' + listName + ' ul');
+
+                    listrow.find('.edit').click(editCategory(datarow[id_field]));
+
+                    listrow.find('.name').text(datarow.name);
+                    listrow.find('.description').text(datarow.description);
+                    listrow.find('.delete').click(function () {
+                        var clicked = $(this).parent().parent(),
+                            clicked_Id = clicked.data(id_field);
+                        deleteById(table,
+                            function (id) {
+                                return true;
+                            },
+                            clicked_Id);
+                        clicked.slideUp();
+                    });
+                }
+            },
+            null);
+    }
+    function refreshList(table, orderByField, listName, beforeRetrieve, processRecords, afterRetrieve) {
+        var i,
+            row;
+
+        if (beforeRetrieve) {
+            beforeRetrieve();
+        }
+
+        $('#' + listName + ' ul li:gt(0)').remove();
+
+        db.transaction(function (transaction) {
+            transaction.executeSql('SELECT * FROM ' + table + ' ORDER BY ' + orderByField, null,
+                processRecords,
+                errorHandler.curry('refreshList (' + table + ')'));
+        });
+
+        if (afterRetrieve) {
+            afterRetrieve();
+        }
+    }
+    function refreshEntries(o) {
         var i,
             row,
             newEntryRow;
@@ -168,49 +255,145 @@
         // $('#date').append('<div>' + load(sessionStorage, 'currentDate') + '</div>')
     }
     function createDatabase() {
-        var shortName = 'Kilo',
+        var shortName = 'Timers',
             version = '1.0',
-            displayName = 'Kilo',
+            displayName = 'Timers',
             maxSize = 65536,
             db;
         db = openDatabase(shortName, version, displayName, maxSize);
         db.transaction(
             function (transaction) {
                 transaction.executeSql(
-                    'CREATE TABLE IF NOT EXISTS entries ' +
-                    ' (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
-                    ' date DATE NOT NULL, food TEXT NOT NULL, ' +
-                    ' calories INTEGER NOT NULL );'
+                    'CREATE TABLE IF NOT EXISTS category ' +
+                    ' (oid_category INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
+                    ' name TEXT NOT NULL, ' +
+                    ' description TEXT NOT NULL );'
+                    );
+                transaction.executeSql(
+                    'CREATE TABLE IF NOT EXISTS timerset ' +
+                    ' (oid_timerset INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
+                    ' name TEXT NOT NULL, ' +
+                    ' description TEXT NOT NULL, ' +
+                    ' enabled INTEGER NOT NULL DEFAULT 1);'
+                    );
+                transaction.executeSql(
+                    'CREATE TABLE IF NOT EXISTS timer_timerset ' +
+                    ' (oid_timer_timerset INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
+                    ' foid_timer INTEGER NOT NULL, ' +
+                    ' foid_timerset INTEGER NOT NULL);'
+                    );
+                transaction.executeSql(
+                    'CREATE TABLE IF NOT EXISTS timer ' +
+                    ' (oid_timer INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
+                    ' name TEXT NOT NULL, ' +
+                    ' description TEXT NOT NULL, ' +
+                    ' enabled BIT NOT NULL DEFAULT 1, ' +
+                    ' duration_hours INTEGER NOT NULL DEFAULT 0, ' +
+                    ' duration_minutes INTEGER NOT NULL DEFAULT 1, ' +
+                    ' duration_seconds INTEGER NOT NULL DEFAULT 0, ' +
+                    ' snooze_hours INTEGER NOT NULL DEFAULT 0, ' +
+                    ' snooze_minutes INTEGER NOT NULL DEFAULT 1, ' +
+                    ' snooze_seconds INTEGER NOT NULL DEFAULT 0, ' +
+                    ' foid_category INTEGER NOT NULL );'
                     );
             });
         return db;
     }
-    function createEntry(e) {
-        var date = sessionStorage.currentDate,
-            calories = $('#calories').val(),
-            food = $('#food').val();
+
+    function create_category(e, o) {
+        
+        var table = 'category',
+            id_field = 'oid_' + table,
+            name_element = $('#' + table + '_name'),
+            description_element = $('#' + table + '_description');
+        try {
+            createRecord(table,
+                function () {
+                    var id_value = name_element.data(id_field);
+                    if (id_value) {
+                        return {
+                            name: id_field,
+                            value: id_value
+                        };
+                    }
+                    return null;
+                },
+                function () {
+                    return ['name', 'description'];
+                },
+                function () {
+                    return [
+                        name_element.val().wrap("'"),
+                        description_element.val().wrap("'")
+                    ];
+                },
+                function (goBack) {
+                    name_element.val('');
+                    description_element.val('');
+                    goBack();
+                });
+        }
+        finally {
+            name_element.data(id_field, null);
+        }
+    }
+    function createRecord(table, getKey, getFieldNames, getFieldValues, refresh, e) {
+        var key = getKey(),
+            fieldNames = getFieldNames(e),
+            fieldValues = getFieldValues(e),
+            sql;
+
+        if (key) {
+            sql = (function getUpdate() {
+                var sql = '',
+                    i;
+                for (i = 0; i < fieldNames.length; i++) {
+                    if (sql.length > 0) {
+                        sql += ', ';
+                    }
+                    sql += (fieldNames[i] + '=' + fieldValues[i]);
+                }
+                return ('UPDATE ' + table + ' SET ' + sql + ' WHERE ' + key.name + '=' + key.value);
+            })();
+        } else {
+            sql = (function getInsert() {
+                return ('INSERT INTO ' + table + ' (' + fieldNames.join(', ') + ') VALUES (' + fieldValues.join(', ') + ');');
+            })();
+        }
         
         db.transaction(function (transaction) {
-            transaction.executeSql(
-                'INSERT INTO entries (date, calories, food) VALUES (?, ?, ?);',
-                [date, calories, food],
-                function() {
-                    refreshEntries();
-                    jQT.goBack();
-                    $('#calories').val('');
-                    $('#food').val('');
+            transaction.executeSql(sql,
+                null,
+                function () {
+                    var entity = $('#create_' + table);
+                    refresh(jQT.goBack);
                 },
-                errorHandler);
+                errorHandler.curry('create_' + table + '("' + [table].concat(fieldNames).concat(fieldValues) + '")'));
         });
-        e.preventDefault();
+        //e.preventDefault();
+    }
+
+    // Returns a function that checks if predicate returns true, and if so calls action
+    function doIf(predicate, action) {
+        return function (e, o) {
+            if (!predicate || predicate(e, o)) {
+                action();
+            }
+            e.preventDefault();
+        };
     }
 
     $(document).ready(function () {
-        $('#settings form').submit(saveSettings);
-        $('#createEntry form').submit(createEntry);
-        $('#settings').bind('pageAnimationStart', loadSettings);
-        $('#dates li a').bind('click touchend', setDate);
-        loadSettings();
+        //$('#settings form').submit(saveSettings);
+        $('#create_category form').submit(create_category);
+        $('#categories').bind('pageAnimationStart',
+            doIf(function (e, o) {
+                return o.direction === 'in';
+            },
+            refresh_category_list));
+        //$('#settings').bind('pageAnimationStart', loadSettings);
+        //$('#dates li a').bind('click touchend', setDate);
+        //loadSettings();
         db = createDatabase();
     });
 }());
