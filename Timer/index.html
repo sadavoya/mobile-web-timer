@@ -6,8 +6,12 @@
     <link type="text/css" rel="stylesheet" media="screen" href="timer.css" />
     <script type="text/javascript" src="jqtouch/jquery-1.4.2.js"></script>
     <script type="text/javascript" src="jqtouch/jqtouch.js"></script>
-    <script type="text/javascript" src="js/timer.js"></script>
     <script type="text/javascript" src="js/util.js"></script>
+    <script type="text/javascript" src="js/timer.js"></script>
+    <script type="text/javascript" src="js/beo_category.js"></script>
+    <script type="text/javascript" src="js/beo_timerset.js"></script>
+    <script type="text/javascript" src="js/beo_timer.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
     <!--<script type="text/javascript" src="js/debug.js"></script> -->
     <title>Timer</title>
 </head>
@@ -61,7 +65,10 @@
         <ul class="edgetoedge">
             <li id="timer_template" class="timer_template template">
                 <span class="timer_template name left">Name</span>
-                <span class="timer_template delete right">Delete</span>
+                <span class="timer_template recordbuttons right">
+                    <span class="timer_template edit left">[Edit] </span>
+                    <span class="timer_template delete right"> [Delete]</span>
+                </span>
                 <span class="timer_template duration center">Duration</span>
             </li>
         </ul>
@@ -99,11 +106,14 @@
             <a class="button back" href="#">Back</a>
             <a class="button slideup" href="#create_timerset">+</a>
         </div>
+        <span>Use timer sets to group timers so you can enable multiple timers at once.</span>
         <ul class="edgetoedge">
-            <li><span>Use timer sets to group timers so you can enable multiple timers at once.</span></li>
             <li id="timerset_template" class="timerset_template template">
                 <span class="timerset_template name left">Name</span>
-                <span class="timerset_template delete right">Delete</span>
+                <span class="timerset_template recordbuttons right">
+                    <span class="timerset_template edit left">[Edit] </span>
+                    <span class="timerset_template delete right"> [Delete]</span>
+                </span>
                 <span class="timerset_template description center">Description</span>
             </li>
         </ul>
@@ -138,9 +148,9 @@
         <ul class="edgetoedge">
             <li id="category_template" class="category_template template">
                 <span class="category_template name left">Name</span>
-                <span class="timerset_template recordbuttons right">
-                    <span class="timerset_template edit left">[Edit] </span>
-                    <span class="timerset_template delete right"> [Delete]</span>
+                <span class="category_template recordbuttons right">
+                    <span class="category_template edit left">[Edit] </span>
+                    <span class="category_template delete right"> [Delete]</span>
                 </span>
                 <span class="category_template description center">Description</span>
             </li>

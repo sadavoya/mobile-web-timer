@@ -42,15 +42,27 @@
     //      B
     //      A
     //          TODO: Need a function to convert to/from hex
+    var my_ns = 'timer';
+    // Only run once
+    if (window.myApp[my_ns]) {
+        return;
+    }
+
+    var ns = window.myApp,
+        jQT,
+        db = createDatabase();
+    if (!window.myApp.jQT) {
+        window.myApp.jQT = $.jQTouch({
+            icon: 'kilo.png',
+            useAnimations: true
+        });
+    }
+    jQT = window.myApp.jQT;
     
 
-    var jQT = $.jQTouch({
-        icon: 'kilo.png',
-        useAnimations: true
-    }),
-        db;
-
     function errorHandler(errorSource, transaction, error) {
+        var name_element = $('');
+        
         alert('Error in ' + errorSource + '. Error was ' + error.message + ' (Code: ' + error.code + ')');
         return true;
     }
@@ -114,17 +126,7 @@
                 });
         }
     }
-    function editCategory(id_value) {
-        var table = 'category',
-            id_field = 'oid_' + table;
-        function populate(datarow) {
-            var name_element = $('#' + table + '_name');
-            name_element.val(datarow.name);
-            name_element.data(id_field, id_value);
-            $('#' + table + '_description').val(datarow.description);
-        }
-        return editRecord(table, id_field, id_value, populate);
-    }
+
     function editRecord(table, id_field, id_value, populate) {
         return function () {
             db.transaction(function (transaction) {                
@@ -141,44 +143,7 @@
             jQT.goTo('#create_' + table, 'slideup');
         }
     }
-    function refresh_category_list() {
-        var table = 'category',
-            orderByField = 'name',
-            listName = 'categories';
 
-        refreshList(table, orderByField, listName,
-            null,
-            function (transaction, records) {
-                var datarow,
-                    listrow,
-                    id_field = 'oid_' + table;
-
-                for (i = 0; i < records.rows.length; i += 1) {
-                    datarow = records.rows.item(i);
-                    listrow = $('#' + table + '_template').clone();
-                    listrow.removeAttr('id');
-                    listrow.removeClass('template');
-                    listrow.data(id_field, datarow[id_field]);
-                    listrow.appendTo('#' + listName + ' ul');
-
-                    listrow.find('.edit').click(editCategory(datarow[id_field]));
-
-                    listrow.find('.name').text(datarow.name);
-                    listrow.find('.description').text(datarow.description);
-                    listrow.find('.delete').click(function () {
-                        var clicked = $(this).parent().parent(),
-                            clicked_Id = clicked.data(id_field);
-                        deleteById(table,
-                            function (id) {
-                                return true;
-                            },
-                            clicked_Id);
-                        clicked.slideUp();
-                    });
-                }
-            },
-            null);
-    }
     function refreshList(table, orderByField, listName, beforeRetrieve, processRecords, afterRetrieve) {
         var i,
             row;
@@ -255,11 +220,15 @@
         // $('#date').append('<div>' + load(sessionStorage, 'currentDate') + '</div>')
     }
     function createDatabase() {
+        if (window.myApp.database_created) {
+            return;
+        }
         var shortName = 'Timers',
             version = '1.0',
             displayName = 'Timers',
             maxSize = 65536,
             db;
+        window.myApp.database_created = true;
         db = openDatabase(shortName, version, displayName, maxSize);
         db.transaction(
             function (transaction) {
@@ -274,7 +243,7 @@
                     ' (oid_timerset INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
                     ' name TEXT NOT NULL, ' +
                     ' description TEXT NOT NULL, ' +
-                    ' enabled INTEGER NOT NULL DEFAULT 1);'
+                    ' enabled TEXT NOT NULL);'
                     );
                 transaction.executeSql(
                     'CREATE TABLE IF NOT EXISTS timer_timerset ' +
@@ -300,43 +269,6 @@
         return db;
     }
 
-    function create_category(e, o) {
-        
-        var table = 'category',
-            id_field = 'oid_' + table,
-            name_element = $('#' + table + '_name'),
-            description_element = $('#' + table + '_description');
-        try {
-            createRecord(table,
-                function () {
-                    var id_value = name_element.data(id_field);
-                    if (id_value) {
-                        return {
-                            name: id_field,
-                            value: id_value
-                        };
-                    }
-                    return null;
-                },
-                function () {
-                    return ['name', 'description'];
-                },
-                function () {
-                    return [
-                        name_element.val().wrap("'"),
-                        description_element.val().wrap("'")
-                    ];
-                },
-                function (goBack) {
-                    name_element.val('');
-                    description_element.val('');
-                    goBack();
-                });
-        }
-        finally {
-            name_element.data(id_field, null);
-        }
-    }
     function createRecord(table, getKey, getFieldNames, getFieldValues, refresh, e) {
         var key = getKey(),
             fieldNames = getFieldNames(e),
@@ -373,27 +305,12 @@
         //e.preventDefault();
     }
 
-    // Returns a function that checks if predicate returns true, and if so calls action
-    function doIf(predicate, action) {
-        return function (e, o) {
-            if (!predicate || predicate(e, o)) {
-                action();
-            }
-            e.preventDefault();
-        };
-    }
-
-    $(document).ready(function () {
-        //$('#settings form').submit(saveSettings);
-        $('#create_category form').submit(create_category);
-        $('#categories').bind('pageAnimationStart',
-            doIf(function (e, o) {
-                return o.direction === 'in';
-            },
-            refresh_category_list));
-        //$('#settings').bind('pageAnimationStart', loadSettings);
-        //$('#dates li a').bind('click touchend', setDate);
-        //loadSettings();
-        db = createDatabase();
-    });
+    // Update the namespace with public methods
+    (function () {
+        ns.add('createRecord', createRecord, my_ns);
+        ns.add('createDatabase', createDatabase, my_ns);
+        ns.add('refreshList', refreshList, my_ns);
+        ns.add('editRecord', editRecord, my_ns);
+        ns.add('deleteById', deleteById, my_ns);
+    })();
 }());
