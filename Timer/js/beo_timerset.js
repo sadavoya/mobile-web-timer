@@ -114,15 +114,15 @@
 
                     for (i = 0; i < records.rows.length; i += 1) {
                         datarow = records.rows.item(i);
-                        enabled = (datarow[fields.enabled] === 'true') ? '[x]' : '[ ]';
                         listrow = row_template.clone();
                         listrow.removeAttr('id');
                         listrow.removeClass('template');
                         listrow.data(id_field, datarow[id_field]);
                         listrow.appendTo('#' + listName + ' ul');
 
+                        enabled = (datarow[fields.enabled] === 'true') ? '[x]' : '[ ]';
                         listrow.find('.' + fields.name).text(datarow[fields.name]);
-                        listrow.find('.description').text(datarow[fields.description] + ' ' + enabled);
+                        listrow.find('.' + fields.description).text(datarow[fields.description] + ' ' + enabled);
 
 
                         listrow.find('.edit').click(edit_timerset(datarow[id_field]));
