@@ -117,15 +117,18 @@
         e.preventDefault();
     }
 
-    function deleteById(table, canDeleteId, id) {
-        if (!canDeleteId || canDeleteId(id)) {
-            db.transaction(
-                function (transaction) {
-                    transaction.executeSql('DELETE FROM ' + table + ' WHERE oid_' + table + '=' + id + ';', null,
-                        null, errorHandler.curry('DELETE ' + table + '(' + id + ')'));
-                });
+    var deleteById = (function () {
+        function deleteById(table, canDeleteId, id) {
+            if (!canDeleteId || canDeleteId(id)) {
+                db.transaction(
+                    function (transaction) {
+                        transaction.executeSql('DELETE FROM ' + table + ' WHERE oid_' + table + '=' + id + ';', null,
+                            null, errorHandler.curry('DELETE ' + table + '(' + id + ')'));
+                    });
+            }
         }
-    }
+        return deleteById;
+    })();
 
     function editRecord(table, id_field, id_value, populate) {
         return function () {
@@ -269,41 +272,121 @@
         return db;
     }
 
-    function createRecord(table, getKey, getFieldNames, getFieldValues, refresh, e) {
-        var key = getKey(),
-            fieldNames = getFieldNames(e),
-            fieldValues = getFieldValues(e),
-            sql;
+    var createRecord = (function () {
+        function createRecord(table, getKey, getFieldNames, getFieldValues, refresh, e) {
+            var key = getKey(),
+                fieldNames = getFieldNames(e),
+                fieldValues = getFieldValues(e),
+                sql;
 
-        if (key) {
-            sql = (function getUpdate() {
-                var sql = '',
-                    i;
-                for (i = 0; i < fieldNames.length; i++) {
-                    if (sql.length > 0) {
-                        sql += ', ';
+            if (key) {
+                sql = (function getUpdate() {
+                    var sql = '',
+                        i;
+                    for (i = 0; i < fieldNames.length; i++) {
+                        if (sql.length > 0) {
+                            sql += ', ';
+                        }
+                        sql += (fieldNames[i] + '=' + fieldValues[i]);
                     }
-                    sql += (fieldNames[i] + '=' + fieldValues[i]);
-                }
-                return ('UPDATE ' + table + ' SET ' + sql + ' WHERE ' + key.name + '=' + key.value);
-            })();
-        } else {
-            sql = (function getInsert() {
-                return ('INSERT INTO ' + table + ' (' + fieldNames.join(', ') + ') VALUES (' + fieldValues.join(', ') + ');');
-            })();
+                    return ('UPDATE ' + table + ' SET ' + sql + ' WHERE ' + key.name + '=' + key.value);
+                })();
+            } else {
+                sql = (function getInsert() {
+                    return ('INSERT INTO ' + table + ' (' + fieldNames.join(', ') + ') VALUES (' + fieldValues.join(', ') + ');');
+                })();
+            }
+
+            db.transaction(function (transaction) {
+                transaction.executeSql(sql,
+                    null,
+                    function () {
+                        var entity = $('#create_' + table);
+                        refresh(jQT.goBack);
+                    },
+                    errorHandler.curry('create_' + table + '("' + [table].concat(fieldNames).concat(fieldValues) + '")'));
+            });
+            //e.preventDefault();
         }
-        
-        db.transaction(function (transaction) {
-            transaction.executeSql(sql,
-                null,
-                function () {
-                    var entity = $('#create_' + table);
-                    refresh(jQT.goBack);
-                },
-                errorHandler.curry('create_' + table + '("' + [table].concat(fieldNames).concat(fieldValues) + '")'));
-        });
-        //e.preventDefault();
-    }
+        return createRecord;
+    })();
+
+
+
+    // Returns an object that lets us control timed activities, including the clock
+    var main_timer = (function () {
+        var clock_click = function () {
+            if (intervalId) {
+                stop();
+            } else {
+                start();
+            }
+        };
+        // Update the clock if possible
+        var update_clock = (function () {
+            var get_clock = function () { return $('#clock'); },
+                clock,
+                previous_time = '';
+            function pad(time_part) {
+                return ('' + time_part).pad('0', 2);
+            }
+            function fn() {
+                var d8 = new Date(),
+                    time = pad(d8.getHours()) + ':' + pad(d8.getMinutes()) + ':' + pad(d8.getSeconds());
+
+                if (time === previous_time) {
+                    return; // Don't bother updating
+                }
+
+                previous_time = time;
+
+                // See if we have the clock object yet...
+                if (!clock || clock.length === 0) {
+                    // ...we don't have a clock object yet (probably wasn't loaded during previouc call), 
+                    // so try and get it now.
+                    clock = get_clock();
+                    if (clock.length > 0) {
+                        clock.click(clock_click);
+                    }
+                }
+
+                // See if we have a *visible* clock object...
+                if (clock &&
+                    clock.is(':visible')) {
+                    // We have the clock object, so update it.
+                    clock.text(time);
+                }
+            }
+            return fn;
+        })();
+
+        // In the main timer loop
+        // 2. Check if we need to update the active timer list (i.e. is it visible?) - should only update it if it is visible
+        var intervalId,
+            timer_handler, // Empty by default, other code will update this;
+            timer_event = function () {
+                update_clock();
+                if (timer_handler) {
+                    timer_handler();
+                }
+            };
+        function start () {
+            intervalId = window.setInterval(timer_event, 500);
+        };
+        function stop() {
+            window.clearInterval(intervalId);
+            intervalId = null;
+        }
+        function set_handler(handler) {
+            timer_handler = handler;
+        }
+
+        return {
+            start: start,
+            stop: stop,
+            set_handler: set_handler,
+        }
+    });
 
     // Update the namespace with public methods
     (function () {
@@ -312,5 +395,6 @@
         ns.add('refreshList', refreshList, my_ns);
         ns.add('editRecord', editRecord, my_ns);
         ns.add('deleteById', deleteById, my_ns);
+        ns.add('main_timer', main_timer, my_ns);
     })();
 }());

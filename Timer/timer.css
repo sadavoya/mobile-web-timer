@@ -26,3 +26,15 @@ span.activeTimerlist.listbutton {
     border-radius: 6px;
     padding: 0 1px 0 1px;
 }
+#jqt ul li.timeentry input {
+    display: inline;
+    /*
+    border:1px solid;
+    background-color:#eee; 
+    border-color:#f3f3f3 #bbb #bbb #f3f3f3;
+    padding:.5em;
+    zoom: 1;
+    margin:0;
+    */
+    width: 20px;
+}

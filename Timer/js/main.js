@@ -6,11 +6,15 @@
 
 $(document).ready(function () {
     var ns = window.myApp,
-        db = ns.timer.createDatabase();
+        db = ns.timer.createDatabase(),
+        main_timer = ns.timer.main_timer();
 
+    main_timer.start();
+    
     //$('#settings form').submit(saveSettings);
     $('#create_category form').submit(ns.beo_category.create_category);
     $('#create_timerset form').submit(ns.beo_timerset.create_timerset);
+    $('#create_timer form').submit(ns.beo_timer.create_timer);
     $('#categories').bind('pageAnimationStart',
         window.myApp.util.doIf(function (e, o) {
             return o.direction === 'in';
@@ -21,6 +25,11 @@ $(document).ready(function () {
             return o.direction === 'in';
         },
         ns.beo_timerset.refresh_timerset_list));
+    $('#timers').bind('pageAnimationStart',
+        window.myApp.util.doIf(function (e, o) {
+            return o.direction === 'in';
+        },
+        ns.beo_timer.refresh_timer_list));
     //$('#settings').bind('pageAnimationStart', loadSettings);
     //$('#dates li a').bind('click touchend', setDate);
     //loadSettings();

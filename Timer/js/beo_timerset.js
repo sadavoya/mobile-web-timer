@@ -124,7 +124,6 @@
                         listrow.find('.' + fields.name).text(datarow[fields.name]);
                         listrow.find('.' + fields.description).text(datarow[fields.description] + ' ' + enabled);
 
-
                         listrow.find('.edit').click(edit_timerset(datarow[id_field]));
                         listrow.find('.delete').click(function () {
                             var clicked = $(this).parent().parent(),

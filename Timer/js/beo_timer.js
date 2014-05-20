@@ -4,9 +4,6 @@
 /// <reference path="timer.js" />
 /// <reference path="beo_category.js" />
 /// <reference path="beo_timerset.js" />
-/// <reference path="beo_timer.js" /> 
-/// <reference path="beo_category.js" />
-/// <reference path="beo_timerset.js" />
 
 (function () {
     var my_ns = 'beo_timer';
@@ -24,23 +21,62 @@
         });
     }
     jQT = window.myApp.jQT;
+                    
 
-
+    var table = 'timer',
+        id_field = ('oid_' + table),
+        fields = {
+            name: 'name',
+            description: 'description',
+            enabled: 'enabled',
+            duration_name: 'duration',
+            duration: {
+                hours: 'duration_hours',
+                minutes: 'duration_minutes',
+                seconds: 'duration_seconds'
+            },
+            snooze_name: 'snooze',
+            snooze: {
+                hours: 'snooze_hours',
+                minutes: 'snooze_minutes',
+                seconds: 'snooze_seconds'
+            },
+            category: 'category',
+            foid_category: 'foid_category'
+        },
+        // Function to return an object containing all the editor controls
+        get_editor = function () {
+            return ({
+                name: $('#' + table + '_' + fields.name),
+                description: $('#' + table + '_' + fields.description),
+                enabled: $('#' + table + '_' + fields.enabled),
+                duration: {
+                    hours: $('#' + table + '_' + fields.duration.hours), 
+                    minutes: $('#' + table + '_' + fields.duration.minutes), 
+                    seconds: $('#' + table + '_' + fields.duration.seconds), 
+                },
+                snooze: {
+                    hours: $('#' + table + '_' + fields.snooze.hours), 
+                    minutes: $('#' + table + '_' + fields.snooze.minutes), 
+                    seconds: $('#' + table + '_' + fields.snooze.seconds), 
+                },
+                category: $('#' + table + '_' + fields.category)
+            });
+        },
+        get_row_template = function () { return $('#' + table + '_template'); },
+        orderByField = fields.name,
+        listName = 'timers';
 
     // Local code
 
     // Create a new category
     var create_timer = (function () {
         function create_timer(e, o) {
-            /*
-            var table = 'category',
-                id_field = 'oid_' + table,
-                name_element = $('#' + table + '_name'),
-                description_element = $('#' + table + '_description');
+            var editor = get_editor();
             try {
                 ns.timer.createRecord(table,
                     function () {
-                        var id_value = name_element.data(id_field);
+                        var id_value = editor.name.data(id_field);
                         if (id_value) {
                             return {
                                 name: id_field,
@@ -50,72 +86,101 @@
                         return null;
                     },
                     function () {
-                        return ['name', 'description'];
+                        return [fields.name, fields.description, fields.enabled,
+                            fields.duration.hours, fields.duration.minutes, fields.duration.seconds,
+                            fields.snooze.hours, fields.snooze.minutes, fields.snooze.seconds,
+                            fields.foid_category];
                     },
                     function () {
+                        var category = 0;
+
                         return [
-                            name_element.val().wrap("'"),
-                            description_element.val().wrap("'")
+                            editor.name.val().wrap("'"),
+                            editor.description.val().wrap("'"),
+                            ('' + editor.enabled.is(':checked')).wrap("'"),
+                            editor.duration.hours.val().wrap("'"),
+                            editor.duration.minutes.val().wrap("'"),
+                            editor.duration.seconds.val().wrap("'"),
+                            editor.snooze.hours.val().wrap("'"),
+                            editor.snooze.minutes.val().wrap("'"),
+                            editor.snooze.seconds.val().wrap("'"),
+                            0 // TODO: Add category selection list
                         ];
                     },
                     function (goBack) {
-                        name_element.val('');
-                        description_element.val('');
+                        editor.name.val('');
+                        editor.description.val('');
+                        ns.util.setCheckbox(editor.enabled, true);
+                        editor.duration.hours.val('0');
+                        editor.duration.minutes.val('0');
+                        editor.duration.seconds.val('0');
+                        editor.snooze.hours.val('0');
+                        editor.snooze.minutes.val('0');
+                        editor.snooze.seconds.val('0');
+                        editor.category.children().unselect();
                         goBack();
                     });
             }
             finally {
-                name_element.data(id_field, null);
+                editor.name.data(id_field, null);
             }
-            */
+
         }
         return create_timer;
     })();
-
     // Edit the specified category
     var edit_timer = (function () {
         function edit_timer(id_value) {
-            /*
-            var table = 'category',
-                id_field = 'oid_' + table;
+            var editor = get_editor();
             function populate(datarow) {
-                var name_element = $('#' + table + '_name');
-                name_element.val(datarow.name);
-                name_element.data(id_field, id_value);
-                $('#' + table + '_description').val(datarow.description);
+                var duration = '',
+                snooze = '';
+
+                editor.name.val(datarow[fields.name]);
+                editor.name.data(id_field, id_value);
+                editor.description.val(datarow[fields.description]);
+                ns.util.setCheckbox(editor.enabled, (datarow[fields.enabled] === 'true'));
+
+                editor.duration.hours.val(datarow[fields.duration.hours]);
+                editor.duration.minutes.val(datarow[fields.duration.minutes]);
+                editor.duration.seconds.val(datarow[fields.duration.seconds]);
+                editor.snooze.hours.val(datarow[fields.snooze.hours]);
+                editor.snooze.minutes.val(datarow[fields.snooze.minutes]);
+                editor.snooze.seconds.val(datarow[fields.snooze.seconds]);
+                // TODO: Select the correct categoryok
             }
             return ns.timer.editRecord(table, id_field, id_value, populate);
-            */
+
         }
         return edit_timer;
     })();
+
     // Update the list of categories from the database
     var refresh_timer_list = (function () {
         function refresh_timer_list() {
-            /*
-            var table = 'category',
-                orderByField = 'name',
-                listName = 'categories';
-    
+            var row_template = get_row_template();
             ns.timer.refreshList(table, orderByField, listName,
                 null,
                 function (transaction, records) {
                     var datarow,
                         listrow,
-                        id_field = 'oid_' + table;
-    
+                        duration;
+
+
                     for (i = 0; i < records.rows.length; i += 1) {
                         datarow = records.rows.item(i);
-                        listrow = $('#' + table + '_template').clone();
+                        listrow = row_template.clone();
                         listrow.removeAttr('id');
                         listrow.removeClass('template');
                         listrow.data(id_field, datarow[id_field]);
                         listrow.appendTo('#' + listName + ' ul');
-    
-                        listrow.find('.edit').click(edit_category(datarow[id_field]));
-    
-                        listrow.find('.name').text(datarow.name);
-                        listrow.find('.description').text(datarow.description);
+
+                        duration = (datarow[fields.duration.hours] + ':' 
+                            + datarow[fields.duration.minutes]);
+                        listrow.find('.' + fields.name).text(datarow[fields.name]);
+                        listrow.find('.' + fields.duration_name).text(duration);
+
+                        listrow.find('.edit').click(edit_timer(datarow[id_field]));
                         listrow.find('.delete').click(function () {
                             var clicked = $(this).parent().parent(),
                                 clicked_Id = clicked.data(id_field);
@@ -129,7 +194,6 @@
                     }
                 },
                 null);
-            */
         }
         return refresh_timer_list;
     })();

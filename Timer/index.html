@@ -19,7 +19,7 @@
     <div id="home">
         <div class="toolbar">
             <h1>Timers</h1>
-            <div class="rounded">09:00 AM</div>
+            <div class="rounded"><span id="clock">23:59:59</span></div>
             <a class="button flipright" href="#setup">Setup</a>
         </div>
         <ul class="edgetoedge">
@@ -83,8 +83,18 @@
                 <li><input type="text" placeholder="Name" name="name" id="timer_name" autocapitalize="off" autocorrect="off" autocomplete="off" /></li>
                 <li><input type="text" placeholder="Description" name="description" id="timer_description" autocapitalize="off" autocorrect="off" autocomplete="off" /></li>
                 <li><span class="label">Enabled:</span><input type="checkbox" name="enabled" id="timer_enabled" /></li>
-                <li><span class="label">Duration:</span><input type="time" name="duration" id="timer_duration" /></li>
-                <li><span class="label">Snooze:</span><input type="time" placeholder="Snooze" name="snooze" id="timer_snooze" /></li>
+                <li class="timeentry">
+                    <span class="label">Duration:</span>
+                    <input type="text" placeholder="00" name="duration_hours" id="timer_duration_hours" /> :
+                    <input type="text" placeholder="00" name="duration_minutes" id="timer_duration_minutes" /> :
+                    <input type="text" placeholder="00" name="duration_seconds" id="timer_duration_seconds" />
+                </li>
+                <li class="timeentry">
+                    <span class="label">Snooze:</span>
+                    <input type="text" placeholder="00" name="snooze_hours" id="timer_snooze_hours" /> :
+                    <input type="text" placeholder="00" name="snooze_minutes" id="timer_snooze_minutes" /> :
+                    <input type="text" placeholder="00" name="snooze_seconds" id="timer_snooze_seconds" />
+                </li>
                 <li>
                     <label class="left">Category</label>
                     <select name="category" id="timer_category">

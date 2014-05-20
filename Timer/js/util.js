@@ -40,18 +40,40 @@
     })();
 
     // Add curry method to all functions
-    method(Function, 'curry', function () {
-        var slice = Array.prototype.slice,
-            args = slice.apply(arguments),
-            that = this;
-        return function () {
-            return that.apply(null, args.concat(slice.apply(arguments)));
-        };
-    });
+    method(Function, 'curry',
+        // Returns a curried version of the function - one where some but not all parameters have been provided
+        function () {
+            var slice = Array.prototype.slice,
+                args = slice.apply(arguments),
+                that = this;
+            return function () {
+                return that.apply(null, args.concat(slice.apply(arguments)));
+            };
+        });
     // Add wrap method to all strings
-    method(String, 'wrap', function (wrapper) {
-        return (wrapper + this + wrapper);
-    });
+    method(String, 'wrap',
+        // Returns the string with wrapper as both prefix and postfix 
+        function (wrapper) {
+            return (wrapper + this + wrapper);
+        });
+
+    // Add a pad method to all strings
+    method(String, 'pad',
+        // Pad the string, on the left or the right side, 
+        // with a filler string until the string length equals or exceeds len. Return the new string.
+        function (fill, len, rightside) {
+            var result = this;
+            if (fill && len) {
+                while (result.length < len) {
+                    if (rightside) {
+                        result = result + fill;
+                    } else {
+                        result = fill + result;
+                    }
+                }
+            }
+            return (result);
+        });
 
     // Returns a function that checks if predicate returns true, and if so calls action
     var doIf = (function () {
