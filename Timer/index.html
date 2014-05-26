@@ -11,6 +11,7 @@
     <script type="text/javascript" src="js/beo_category.js"></script>
     <script type="text/javascript" src="js/beo_timerset.js"></script>
     <script type="text/javascript" src="js/beo_timer.js"></script>
+    <script type="text/javascript" src="js/ui_active_timer.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
     <!--<script type="text/javascript" src="js/debug.js"></script> -->
     <title>Timer</title>
@@ -22,11 +23,28 @@
             <div class="rounded"><span id="clock">23:59:59</span></div>
             <a class="button flipright" href="#setup">Setup</a>
         </div>
-        <ul class="edgetoedge">
-            <li id="activeTimerTemplate" class="activeTimer template">
-                <span class="activeTimerlist countdown left">Time Left</span>
-                <span class="activeTimerlist willGoOffAt right">(Will Go Off At)</span>
-                <span class="activeTimerlist name center">Name</span>
+        <ul class="activeTimer edgetoedge">
+            <li><a id="ui_active_timer_update">Update</a></li>
+            <li id="ui_active_timer_timerset_template" class="activeTimerTimerset template">
+                <span class="timerset_header">Timerset</span>
+                <ul class="timerset_detail edgetoedge">
+                    <li class="category template">
+                        <span class="category_header">Category</span>
+                        <ul class="category_detail edgetoedge">
+                            <li class="timer template">
+                                <span class="timer_detail countdown left">Time Left</span>
+                                <span class="timer_template rightside right">
+                                    <span class="timer_detail willGoOffAt left">(Will Go Off At)</span>
+                                    <span class="timer_template recordbuttons right">
+                                        <span class="timer_template reset left">[Reset] </span>
+                                        <span class="timer_template toggle right"> [Start / Stop]</span>
+                                    </span>
+                                </span>
+                                <span class="timer_detail name center">Name</span>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
             </li>
         </ul>
     </div>

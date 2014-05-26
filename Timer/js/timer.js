@@ -306,7 +306,7 @@
                     },
                     errorHandler.curry('create_' + table + '("' + [table].concat(fieldNames).concat(fieldValues) + '")'));
             });
-            //e.preventDefault();
+            e.preventDefault();
         }
         return createRecord;
     })();
