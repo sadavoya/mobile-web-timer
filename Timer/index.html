@@ -116,10 +116,13 @@
                 <li>
                     <label class="left">Category</label>
                     <select name="category" id="timer_category">
-                        <option value="0">Healing</option>
-                        <option value="1">Buff</option>
-                        <option value="2">Dmg Shield</option>
-                        <option value="3">Health</option>
+                        <option value="-1" class="template"></option>
+                    </select>
+                </li>
+                <li>
+                    <label class="left">Timersets</label>
+                    <select name="timerset" id="timer_timerset" multiple="">
+                        <option value="-1" class="template"></option>
                     </select>
                 </li>
 
@@ -157,9 +160,9 @@
                 <li><input type="text" placeholder="Description" name="description" id="timerset_description" autocapitalize="off" autocorrect="off" autocomplete="off" /></li>
                 <li><span class="label">Enabled:</span><input type="checkbox" name="enabled" id="timerset_enabled" /></li>
                 <li>
-                    <select name="timers" id="timerset_timers" multiple="true">
-                        <option value="0">"Cast dmg shield (7 minutes)"</option>
-                        <option value="1">"Drink water (30 minutes)"</option>
+                    <label class="left">Timers</label>
+                    <select name="timer" id="timerset_timer" multiple>
+                        <option value="-1" class="template"></option>
                     </select>
                 </li>
                 <li><input type="submit" class="submit" name="action" value="Save" /></li>

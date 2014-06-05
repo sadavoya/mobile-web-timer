@@ -42,7 +42,9 @@
                 seconds: 'snooze_seconds'
             },
             category: 'category',
-            foid_category: 'foid_category'
+            foid_category: 'foid_category',
+            timerset: 'timerset',
+            foid_timerset: 'foid_timerset'
         },
         // Function to return an object containing all the editor controls
         get_editor = function () {
@@ -60,7 +62,8 @@
                     minutes: $('#' + table + '_' + fields.snooze.minutes), 
                     seconds: $('#' + table + '_' + fields.snooze.seconds), 
                 },
-                category: $('#' + table + '_' + fields.category)
+                category: $('#' + table + '_' + fields.category),
+                timerset: $('#' + table + '_' + fields.timerset),
             });
         },
         get_row_template = function () { return $('#' + table + '_template'); },
@@ -104,7 +107,7 @@
                             editor.snooze.hours.val().wrap("'"),
                             editor.snooze.minutes.val().wrap("'"),
                             editor.snooze.seconds.val().wrap("'"),
-                            0 // TODO: Add category selection list
+                            editor.category.val().wrap("'"),
                         ];
                     },
                     function (goBack) {
@@ -117,7 +120,8 @@
                         editor.snooze.hours.val('0');
                         editor.snooze.minutes.val('0');
                         editor.snooze.seconds.val('0');
-                        editor.category.children().unselect();
+                        editor.category.val('-1');
+                        ns.timerset.update_timer_list();
                         goBack();
                     });
             }
@@ -147,7 +151,7 @@
                 editor.snooze.hours.val(datarow[fields.snooze.hours]);
                 editor.snooze.minutes.val(datarow[fields.snooze.minutes]);
                 editor.snooze.seconds.val(datarow[fields.snooze.seconds]);
-                // TODO: Select the correct categoryok
+                editor.category.val(datarow[fields.foid_category]);
             }
             return ns.timer.editRecord(table, id_field, id_value, populate);
 
@@ -190,6 +194,7 @@
                                 },
                                 clicked_Id);
                             clicked.slideUp();
+                            ns.timerset.update_timer_list();
                         });
                     }
                 },
@@ -199,12 +204,39 @@
     })();
 
 
+    var update_category_list = (function () {
+        function update_category_list() {
+            ns.timer.update_select_list('oid_category',
+                'name',
+                'category',
+                'name',
+                get_editor().category,
+                'update_category_list()');
+        }
+        return update_category_list;
+    })();
+
+
+    var update_timerset_list = (function () {
+        function update_timerset_list() {
+            ns.timer.update_select_list('oid_timerset',
+                'name',
+                'timerset',
+                'name',
+                get_editor().timerset,
+                'update_timerset_list()');
+        }
+        return update_timerset_list;
+    })();
+
 
     // Update the namespace with public methods
     (function () {
         ns.add('create_timer', create_timer, my_ns);
         ns.add('edit_timer', edit_timer, my_ns);
         ns.add('refresh_timer_list', refresh_timer_list, my_ns);
+        ns.add('update_category_list', update_category_list, my_ns);
+        ns.add('update_timerset_list', update_timerset_list, my_ns);
     })();
 
 })();

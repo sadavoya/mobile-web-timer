@@ -25,12 +25,6 @@ $(document).ready(function () {
     //ns.beo_timerset.update_form_lists));
     $('#create_timer form').submit(ns.beo_timer.create_timer);
 
-    //$('#create_timer').bind('pageAnimationStart',
-    //    window.myApp.util.doIf(function (e, o) {
-    //        return o.direction === 'in';
-    //    },
-    //    ns.beo_timer.update_form_lists));
-
     $('#categories').bind('pageAnimationStart',
         window.myApp.util.doIf(function (e, o) {
             return o.direction === 'in';
@@ -49,13 +43,18 @@ $(document).ready(function () {
         ns.beo_timer.refresh_timer_list));
 
 
-    $('#home').bind('pageAnimationStart',
-        window.myApp.util.doIf(function (e, o) {
-            return o.direction === 'in';
-        },
-        ns.ui_active_timer.refresh_active_timer_list));
+    //$('#home').bind('pageAnimationStart',
+    //    window.myApp.util.doIf(function (e, o) {
+    //        return o.direction === 'in';
+    //    },
+    //    ns.ui_active_timer.refresh_active_timer_list));
+
     //$('#settings').bind('pageAnimationStart', loadSettings);
     //$('#dates li a').bind('click touchend', setDate);
     //loadSettings();
 
+    // run these once initially to set up selection lists
+    ns.beo_timer.update_category_list();
+    ns.beo_timer.update_timerset_list();
+    ns.beo_timerset.update_timer_list();
 });

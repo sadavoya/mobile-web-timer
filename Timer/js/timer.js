@@ -50,7 +50,7 @@
 
     var ns = window.myApp,
         jQT,
-        db = createDatabase();
+        db;
     if (!window.myApp.jQT) {
         window.myApp.jQT = $.jQTouch({
             icon: 'kilo.png',
@@ -60,12 +60,15 @@
     jQT = window.myApp.jQT;
     
 
-    function errorHandler(errorSource, transaction, error) {
-        var name_element = $('');
-        
-        alert('Error in ' + errorSource + '. Error was ' + error.message + ' (Code: ' + error.code + ')');
-        return true;
-    }
+    var errorHandler = (function () {
+        function errorHandler(errorSource, transaction, error) {
+            var name_element = $('');
+
+            alert('Error in ' + errorSource + '. Error was ' + error.message + ' (Code: ' + error.code + ')');
+            return true;
+        }
+        return errorHandler;
+    })();
 
     function save(target, name, valToSave) {
         var val = valToSave;
@@ -122,156 +125,112 @@
             if (!canDeleteId || canDeleteId(id)) {
                 db.transaction(
                     function (transaction) {
-                        transaction.executeSql('DELETE FROM ' + table + ' WHERE oid_' + table + '=' + id + ';', null,
-                            null, errorHandler.curry('DELETE ' + table + '(' + id + ')'));
+                        transaction.executeSql('DELETE FROM ' + table + ' WHERE oid_' + table + '=' + id + ';',
+                            null,
+                            null,
+                            errorHandler.curry('DELETE ' + table + '(' + id + ')'));
                     });
             }
         }
         return deleteById;
     })();
 
-    function editRecord(table, id_field, id_value, populate) {
-        return function () {
-            db.transaction(function (transaction) {                
-                transaction.executeSql('SELECT * FROM ' + table + ' WHERE ' + id_field + '=' + id_value, null,
-                    function (transaction, records) {
-                        var datarow;
-                        if (records && records.rows && records.rows.item(0)) {
-                            datarow = records.rows.item(0);
-                            populate(datarow);                            
-                        }
-                    },
-                    errorHandler.curry('refreshList (' + table + ')'));
-            });
-            jQT.goTo('#create_' + table, 'slideup');
-        }
-    }
-
-    function refreshList(table, orderByField, listName, beforeRetrieve, processRecords, afterRetrieve) {
-        var i,
-            row;
-
-        if (beforeRetrieve) {
-            beforeRetrieve();
-        }
-
-        $('#' + listName + ' ul li:gt(0)').remove();
-
-        db.transaction(function (transaction) {
-            transaction.executeSql('SELECT * FROM ' + table + ' ORDER BY ' + orderByField, null,
-                processRecords,
-                errorHandler.curry('refreshList (' + table + ')'));
-        });
-
-        if (afterRetrieve) {
-            afterRetrieve();
-        }
-    }
-    function refreshEntries(o) {
-        var i,
-            row,
-            newEntryRow;
-
-        // Set the date header
-        $('#date h1').text(sessionStorage.currentDate);
-
-        // Clear any existing rows (we are about to reload them)
-        $('#date ul li:gt(0)').remove();
-        function processEntries(transaction, result) {
-            for (i = 0; i < result.rows.length; i += 1) {
-                row = result.rows.item(i);
-                newEntryRow = $('#entryTemplate').clone();
-                newEntryRow.removeAttr('id');
-                newEntryRow.removeAttr('style');
-                newEntryRow.data('entryId', row.id);
-                newEntryRow.appendTo('#date ul');
-                newEntryRow.find('.label').text(row.food);
-                newEntryRow.find('.calories').text(row.calories);
-                newEntryRow.find('.delete').click(function () {
-                    var clickedEntry = $(this).parent(),
-                        clickedEntryId = clickedEntry.data('entryId');
-                    deleteEntryById(clickedEntryId);
-                    clickedEntry.slideUp();
+    var editRecord = (function () {
+        function editRecord(table, id_field, id_value, populate) {
+            return function () {
+                db.transaction(function (transaction) {                
+                    transaction.executeSql('SELECT * FROM ' + table + ' WHERE ' + id_field + '=' + id_value, null,
+                        function (transaction, records) {
+                            var datarow;
+                            if (records && records.rows && records.rows.item(0)) {
+                                datarow = records.rows.item(0);
+                                populate(datarow);                            
+                            }
+                        },
+                        errorHandler.curry('refreshList (' + table + ')'));
                 });
+                jQT.goTo('#create_' + table, 'slideup');
             }
         }
+        return editRecord;
+    })();
+    var refreshList = (function () {
+        function refreshList(table, orderByField, listName, beforeRetrieve, processRecords, afterRetrieve) {
+            var i,
+                row;
 
-        db.transaction(function (transaction) {
-            transaction.executeSql('SELECT * FROM entries WHERE date = ? ORDER BY food', [sessionStorage.currentDate],
-                processEntries,
-                errorHandler);
-        });
-    }
+            if (beforeRetrieve) {
+                beforeRetrieve();
+            }
 
-    function setDate() {
-        // Get the id of the bound control
-        var dayOffset = this.id,
-            date = new Date(),
-            month,
-            currentDate;
+            $('#' + listName + ' ul li:gt(0)').remove();
 
-        // Build the new date
-        date.setDate(date.getDate() - dayOffset);
-        month = date.getMonth() + 1;
-        currentDate = month + '/' + date.getDate() + '/' + date.getFullYear();
+            db.transaction(function (transaction) {
+                transaction.executeSql('SELECT * FROM ' + table + ' ORDER BY ' + orderByField, null,
+                    processRecords,
+                    errorHandler.curry('refreshList (' + table + ')'));
+            });
 
-        // Save the date in the session
-        save(sessionStorage, 'currentDate', currentDate);
-
-        refreshEntries();
-        // Debug: show the date
-        // $('#date').append('<div>' + load(sessionStorage, 'currentDate') + '</div>')
-    }
-    function createDatabase() {
-        if (window.myApp.database_created) {
-            return;
+            if (afterRetrieve) {
+                afterRetrieve();
+            }
         }
+        return refreshList;
+    })();
+
+    var createDatabase = (function () {
         var shortName = 'Timers',
             version = '1.0',
             displayName = 'Timers',
             maxSize = 65536,
             db;
-        window.myApp.database_created = true;
-        db = openDatabase(shortName, version, displayName, maxSize);
-        db.transaction(
-            function (transaction) {
-                transaction.executeSql(
-                    'CREATE TABLE IF NOT EXISTS category ' +
-                    ' (oid_category INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
-                    ' name TEXT NOT NULL, ' +
-                    ' description TEXT NOT NULL );'
-                    );
-                transaction.executeSql(
-                    'CREATE TABLE IF NOT EXISTS timerset ' +
-                    ' (oid_timerset INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
-                    ' name TEXT NOT NULL, ' +
-                    ' description TEXT NOT NULL, ' +
-                    ' enabled TEXT NOT NULL);'
-                    );
-                transaction.executeSql(
-                    'CREATE TABLE IF NOT EXISTS timer_timerset ' +
-                    ' (oid_timer_timerset INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
-                    ' foid_timer INTEGER NOT NULL, ' +
-                    ' foid_timerset INTEGER NOT NULL);'
-                    );
-                transaction.executeSql(
-                    'CREATE TABLE IF NOT EXISTS timer ' +
-                    ' (oid_timer INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
-                    ' name TEXT NOT NULL, ' +
-                    ' description TEXT NOT NULL, ' +
-                    ' enabled BIT NOT NULL DEFAULT 1, ' +
-                    ' duration_hours INTEGER NOT NULL DEFAULT 0, ' +
-                    ' duration_minutes INTEGER NOT NULL DEFAULT 1, ' +
-                    ' duration_seconds INTEGER NOT NULL DEFAULT 0, ' +
-                    ' snooze_hours INTEGER NOT NULL DEFAULT 0, ' +
-                    ' snooze_minutes INTEGER NOT NULL DEFAULT 1, ' +
-                    ' snooze_seconds INTEGER NOT NULL DEFAULT 0, ' +
-                    ' foid_category INTEGER NOT NULL );'
-                    );
-            });
-        return db;
-    }
+        function createDatabase() {
+            if (db) {
+                return db;
+            }
 
+            db = openDatabase(shortName, version, displayName, maxSize);
+
+            db.transaction(
+                function (transaction) {
+                    transaction.executeSql(
+                        'CREATE TABLE IF NOT EXISTS category ' +
+                        ' (oid_category INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
+                        ' name TEXT NOT NULL, ' +
+                        ' description TEXT NOT NULL );'
+                        );
+                    transaction.executeSql(
+                        'CREATE TABLE IF NOT EXISTS timerset ' +
+                        ' (oid_timerset INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
+                        ' name TEXT NOT NULL, ' +
+                        ' description TEXT NOT NULL, ' +
+                        ' enabled TEXT NOT NULL);'
+                        );
+                    transaction.executeSql(
+                        'CREATE TABLE IF NOT EXISTS timer_timerset ' +
+                        ' (oid_timer_timerset INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
+                        ' foid_timer INTEGER NOT NULL, ' +
+                        ' foid_timerset INTEGER NOT NULL);'
+                        );
+                    transaction.executeSql(
+                        'CREATE TABLE IF NOT EXISTS timer ' +
+                        ' (oid_timer INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
+                        ' name TEXT NOT NULL, ' +
+                        ' description TEXT NOT NULL, ' +
+                        ' enabled BIT NOT NULL DEFAULT 1, ' +
+                        ' duration_hours INTEGER NOT NULL DEFAULT 0, ' +
+                        ' duration_minutes INTEGER NOT NULL DEFAULT 1, ' +
+                        ' duration_seconds INTEGER NOT NULL DEFAULT 0, ' +
+                        ' snooze_hours INTEGER NOT NULL DEFAULT 0, ' +
+                        ' snooze_minutes INTEGER NOT NULL DEFAULT 1, ' +
+                        ' snooze_seconds INTEGER NOT NULL DEFAULT 0, ' +
+                        ' foid_category INTEGER NOT NULL );'
+                        );
+                });
+            return db;
+        }
+        return createDatabase;
+    })();
     var createRecord = (function () {
         function createRecord(table, getKey, getFieldNames, getFieldValues, refresh, e) {
             var key = getKey(),
@@ -306,11 +265,37 @@
                     },
                     errorHandler.curry('create_' + table + '("' + [table].concat(fieldNames).concat(fieldValues) + '")'));
             });
-            e.preventDefault();
+            //e.preventDefault();
         }
         return createRecord;
     })();
 
+    var update_select_list = (function () {
+        function update_select_list(oid, name, table, order_by, select, error_source) {
+            db.transaction(function (transaction) {
+                transaction.executeSql('SELECT ' + oid + ', ' + name + ' FROM ' + table + ' ORDER BY ' + order_by, null,
+                    function (transaction, records) {
+                        var datarow, template, option_row;
+
+                        select.find('option:gt(0)').remove();
+                        template = select.find('option')
+
+                        for (i = 0; i < records.rows.length; i += 1) {
+                            datarow = records.rows.item(i);
+                            option_row = template.clone();
+                            option_row.removeAttr('id');
+                            option_row.removeClass('template');
+                            option_row.appendTo(select);
+
+                            option_row.val(datarow[oid]);
+                            option_row.text(datarow[name]);
+                        }
+                    },
+                    ns.timer.errorHandler.curry(error_source));
+            });
+        }
+        return update_select_list;
+    })();
 
 
     // Returns an object that lets us control timed activities, including the clock
@@ -390,11 +375,14 @@
 
     // Update the namespace with public methods
     (function () {
+        db = createDatabase();
+        ns.add('errorHandler', errorHandler, my_ns);
         ns.add('createRecord', createRecord, my_ns);
         ns.add('createDatabase', createDatabase, my_ns);
         ns.add('refreshList', refreshList, my_ns);
         ns.add('editRecord', editRecord, my_ns);
         ns.add('deleteById', deleteById, my_ns);
         ns.add('main_timer', main_timer, my_ns);
+        ns.add('update_select_list', update_select_list, my_ns);
     })();
 }());

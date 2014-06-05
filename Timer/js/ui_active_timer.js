@@ -96,24 +96,22 @@
         function refresh_active_timer_list() {
             // Retrieves the data for enabled timersets
             var refreshFromDB = (function () {
-                function refreshList(listName, processRecords) {
-                    var i,
-                        row;
-
-                    db.transaction(function (transaction) {
-                        transaction.executeSql("SELECT timer.*, " +
+                function refreshFromDB(listName, processRecords) {
+                    var handler = ns.timer.errorHandler.curry('refreshList (ui_active_timer)'),
+                        sql = "SELECT timer.*, " +
                             " category.oid_category, category.name, timerset.oid_timerset, timerset.name " +
                             " FROM category INNER JOIN timer ON timer.foid_category = category.oid_category " +
                             " INNER JOIN timer_timerset ON timer.oid_timer = timer_timerset.foid_timer " +
                             " INNER JOIN timerset ON timerset.oid_timerset = timer_timerset.foid_timerset " +
                             " WHERE timerset.enabled = 'true' " +
                             " AND timer.enabled = 'true' " +
-                            " ORDER BY timerset.name, category.name, timer.name",
-                            processRecords,
-                            errorHandler.curry('refreshList (ui_active_timer)'));
+                            " ORDER BY timerset.name, category.name, timer.name";
+                    
+                    db.transaction(function (transaction) {
+                        transaction.executeSql(sql, null, processRecords, handler);
                     });
                 }
-                return refreshList;
+                return refreshFromDB;
             })();
             // Builds the in-memory data structure from the database data
             var build_timersets = (function () {
@@ -277,9 +275,9 @@
                 $('#' + listName + ' ul li:gt(' + (template.count - 1) + ')').remove();
                 
                 // Loop through the timersets...
-                for (i = 0; i < timersets.keys.length; i++) {
+                for (i = 0; i < timersetcoll.keys.length; i++) {
                     // ...and create a new row for each one
-                    timerset = timersets.values[timersets.keys[i]];
+                    timerset = timersetcoll.values[timersetcoll.keys[i]];
                     timerset_detail = build_list_row(timerset_element_to_clone, timerset_parent_list,
                         '.timerset_header', timerset.name, 'ul.timerset_detail', null);
                     

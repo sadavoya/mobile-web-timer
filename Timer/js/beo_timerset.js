@@ -28,14 +28,17 @@
         fields = {
             name: 'name',
             description: 'description',
-            enabled: 'enabled'
+            enabled: 'enabled',
+            timer: 'timer',
+            foid_timer: 'foid_timer'
         },
         // Function to return an object containing all the editor controls
         get_editor = function () {
             return ({
                 name: $('#' + table + '_' + fields.name),
                 description: $('#' + table + '_' + fields.description),
-                enabled: $('#' + table + '_' + fields.enabled)
+                enabled: $('#' + table + '_' + fields.enabled),
+                timer: $('#' + table + '_' + fields.timer)
             });
         },
         get_row_template = function () { return $('#' + table + '_template'); },
@@ -74,6 +77,7 @@
                         editor.name.val('');
                         editor.description.val('');
                         ns.util.setCheckbox(editor.enabled, true);
+                        ns.beo_timer.update_timerset_list();
                         goBack();
                     });
             }
@@ -134,6 +138,7 @@
                                 },
                                 clicked_Id);
                             clicked.slideUp();
+                            ns.beo_timer.update_timerset_list();
                         });
                     }
                 },
@@ -142,11 +147,24 @@
         return refresh_timerset_list;
     })();
 
+    var update_timer_list = (function () {
+        function update_timer_list() {
+            ns.timer.update_select_list('oid_timer',
+                'name',
+                'timer',
+                'name',
+                get_editor().timer,
+                'update_timer_list()');
+        }
+        return update_timer_list;
+    })();
+
     // Update the namespace with public methods
     (function () {
         ns.add('create_timerset', create_timerset, my_ns);
         ns.add('edit_timerset', edit_timerset, my_ns);
         ns.add('refresh_timerset_list', refresh_timerset_list, my_ns);
+        ns.add('update_timer_list', update_timer_list, my_ns);
     })();
 
 })();

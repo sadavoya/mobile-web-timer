@@ -115,5 +115,6 @@
         ns.add('doIf', doIf, my_ns);
         ns.add('method', method, my_ns);
         ns.add('setCheckbox', setCheckbox, my_ns);
+
     })();
 })();

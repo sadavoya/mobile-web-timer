@@ -70,6 +70,7 @@
                     function (goBack) {
                         editor.name.val('');
                         editor.description.val('');
+                        ns.beo_timer.update_category_list();
                         goBack();
                     });
             }
@@ -126,6 +127,7 @@
                                 },
                                 clicked_Id);
                             clicked.slideUp();
+                            ns.beo_timer.update_category_list();
                         });
                     }
                 },
